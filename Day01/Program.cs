@@ -1,33 +1,33 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
         string[] lines = File.ReadAllLines(@"input.txt");
+        string[] testLines = File.ReadAllLines(@"input - sample.txt");
 
-        List<int> leftlist = [];
-        List<int> rightlist = [];
+        var match = static (string _line, int matchNo) => Regex.Matches(_line, @"\b(\w+)")[matchNo].Value;
+        var genLeftList = (string[] _lines) => _lines.Select(l => int.Parse(match(l, 0)));
+        var genRightList = (string[] _lines) => _lines.Select(l => int.Parse(match(l, 1)));
+        var finalList = static (IEnumerable<int> _left, IEnumerable<int> _right) => 
+            _left.Order().Zip(_right.Order()).Select(p => new Pair() { Left = p.First, Right = p.Second });
+        var calculateDistance = static (IEnumerable<Pair> pairs) => pairs.Sum(p => Math.Abs(p.Left - p.Right));
 
-        foreach (var line in lines)
-        {
-            leftlist.Add(int.Parse(line.Split(" ", StringSplitOptions.TrimEntries)[0]));
-            rightlist.Add(int.Parse(line.Split(" ", StringSplitOptions.TrimEntries)[1]));
-        }
+        Console.WriteLine("--- PART ONE ---\n");
+        Console.WriteLine($"The total distance is: {calculateDistance(finalList(genLeftList(lines), genRightList(lines)))}.");
+        Console.WriteLine();
+        Console.WriteLine($"Test distance: {calculateDistance(finalList(genLeftList(testLines), genRightList(testLines)))}.");
 
-        leftlist.Sort();
-        rightlist.Sort();
+        var SimilarityScore = (int leftNumber, IEnumerable<int> rightList) => rightList.Where(i => i == leftNumber).Sum();
+        var TotalSimilarityScore = (IEnumerable<int> _left, IEnumerable<int> _right) => _left.Sum(i => SimilarityScore(i, _right));
 
-        List<Pair> pairs = [];
+        Console.WriteLine("--- PART TWO ---\n");
+        Console.WriteLine($"The total similary score is: {TotalSimilarityScore(genLeftList(lines), genRightList(lines))}.");
+        Console.WriteLine();
+        Console.WriteLine($"Test score: {TotalSimilarityScore(genLeftList(testLines), genRightList(testLines))}.");
 
-        for (int i = 0; i < leftlist.Count; i++)
-        {
-            pairs.Add(new Pair { Left = leftlist[i], Right = rightlist[i] });
-        }
-
-        int distance = pairs.Sum(s => Math.Abs(s.Left + s.Right));
-
-        Console.WriteLine($"The total distance is: {distance}.");
     }
 }
 
