@@ -44,6 +44,8 @@ namespace Day02
             var d = SafeYesDamper([1, 3, 4, 7, 10, 13, 16, 20], 1);
             var d2 = SafeYesDamper([1, 3, 4, 7, 10, 13, 21, 15], 1);
             var d3 = SafeYesDamper([61, 62, 65, 67, 70], 1);
+            var d4 = SafeYesDamper([1, 2, 3, 4, 5], 1);
+            var d5 = SafeYesDamper([1, 2, 3], 1);
             var e = LoadToArrays(liveInput).Select(a => new ArrayScore { 
                 Array = a, IsSafePart1 = SafeYes(a), IsSafePart2 = SafeYesDamper(a, 1),
                 DescendingYes = DescendingYes(a), AscendingYes = AscendingYes(a) });
@@ -163,7 +165,7 @@ namespace Day02
 
         static IEnumerable<int[]> DampedPermutations(int[] ints, int damper = 0)
         {
-            var Permutations = Enumerable.Range(1, ints.Length - 1 - damper).Select(i =>
+            var Permutations = Enumerable.Range(0, ints.Length + 1 - damper).Select(i =>
                 ints.Take(i).Concat(ints.TakeLast(ints.Length - i - damper)).ToArray());
             //var Perms = new List<int[]>();
             //foreach(var i in Enumerable.Range(1, ints.Length - 1 - damper))
