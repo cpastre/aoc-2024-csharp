@@ -167,16 +167,6 @@ namespace Day02
         {
             var Permutations = Enumerable.Range(0, ints.Length + 1 - damper).Select(i =>
                 ints.Take(i).Concat(ints.TakeLast(ints.Length - i - damper)).ToArray());
-            //var Perms = new List<int[]>();
-            //foreach(var i in Enumerable.Range(1, ints.Length - 1 - damper))
-            //{
-            //    var a = ints.Take(i);
-            //    var endlength = ints.Length - i - damper;
-            //    var b = ints.TakeLast(endlength);
-            //    var c = a.Concat(b);
-            //    var d = c.ToArray();
-            //    Perms.Add(d);
-            //}
             
             return Permutations.Append(ints);
         }
