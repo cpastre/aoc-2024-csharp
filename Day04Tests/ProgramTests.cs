@@ -27,5 +27,53 @@ namespace Day04.Tests
             newLocation = MoveLocation(initialLocation, Directions[Compass.NE], 1);
             Assert.AreEqual(newLocation, new() { i = 2, j = 5 });
         }
+
+        [TestMethod()]
+        public void CountFoundStringsTest()
+        {
+            var liveInput = File.ReadAllLines(@"input.txt");
+            var testInput = File.ReadAllLines(@"input - sample.txt");
+
+            var countXmases = (string[] input) => CountFoundStrings(input, "XMAS");
+
+            //part 1
+            Assert.AreEqual(countXmases(liveInput), 2390);
+            Assert.AreEqual(countXmases(testInput), 18);
+        }
+
+        [TestMethod()]
+        public void PerpendicularDirectionsTest()
+        {
+            var result = PerpendicularDirections(Directions[Compass.E]);
+            Assert.IsTrue((result.perp1.compass == Compass.N || result.perp1.compass == Compass.S) &&
+                (result.perp2.compass == Compass.N || result.perp2.compass == Compass.S));
+
+            result = PerpendicularDirections(Directions[Compass.SW]);
+            Assert.IsTrue((result.perp1.compass == Compass.NW || result.perp1.compass == Compass.SE) &&
+                (result.perp2.compass == Compass.NW || result.perp2.compass == Compass.SE));
+
+            result = PerpendicularDirections(Directions[Compass.S]);
+            Assert.IsTrue((result.perp1.compass == Compass.W || result.perp1.compass == Compass.E) &&
+                (result.perp2.compass == Compass.W || result.perp2.compass == Compass.E));
+        }
+
+        [TestMethod()]
+        public void ArePerpendicularTest()
+        {
+            Assert.IsTrue(ArePerpendicular(Directions[Compass.W], Directions[Compass.N]));
+            Assert.IsTrue(ArePerpendicular(Directions[Compass.SE], Directions[Compass.NE]));
+            Assert.IsFalse(ArePerpendicular(Directions[Compass.W], Directions[Compass.SW]));
+            Assert.IsFalse(ArePerpendicular(Directions[Compass.SW], Directions[Compass.SW]));
+        }
+
+        [TestMethod()]
+        public void GetSubBlockTest()
+        {
+            string[] testblock = ["01234", "56789", "ABCDE", "FGHIJ", "KLMNO"];
+            Assert.ThrowsException<ArgumentException>(() => GetSubBlock(testblock, new Location { i = 2, j = 2 }, 2, 3));
+            Assert.ThrowsException<ArgumentException>(() => GetSubBlock(testblock, new Location { i = 3, j = 3 }, 5, 6));
+            Assert.ThrowsException<ArgumentException>(() => GetSubBlock(testblock, new Location { i = 4, j = 3 }, 3, 3));
+            Assert.ThrowsException<ArgumentException>(() => GetSubBlock(testblock, new Location { i = 2, j = 3 }, 5, 5));
+        }
     }
 }
