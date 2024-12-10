@@ -68,7 +68,7 @@
             {
                 foreach(int j in Enumerable.Range(1, input[i].Length - 2))
                 {
-                    foreach(var dir in Directions.Where(d => d.Value.cardinality < 8))
+                    foreach(var dir in Directions.Where(d => d.Value.cardinality % 2 == 1)) //Odd cardinality because only looking for X shaped, not + shaped
                     {
                         var location = () => new Location { i = i, j = j };
                         if(IsMasFromDirection(input, dir.Value, location()))
