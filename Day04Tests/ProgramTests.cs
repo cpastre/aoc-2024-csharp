@@ -101,5 +101,58 @@ namespace Day04.Tests
             Assert.AreEqual(Directions[Compass.SE], OpposingDirection(Directions[Compass.NW]));
             Assert.AreEqual(Directions[Compass.S], OpposingDirection(Directions[Compass.N]));
         }
+
+        [TestMethod()]
+        public void IsMasTest()
+        {
+            string[] testBlock = [".M.S.",
+                                  "..A..",
+                                  ".M.S.",
+                                  "..A.A",
+                                  ".M.S.M"];
+
+            Assert.IsTrue(IsMas(testBlock, Directions[Compass.SE], new Location { i = 0, j = 1 }));
+            Assert.IsFalse(IsMas(testBlock, Directions[Compass.E], new Location { i = 0, j = 1 }));
+        }
+
+        [TestMethod()]
+        public void IsMasFromDirectionTest()
+        {
+            string[] testBlock = [".M.S.",
+                                  "..A..",
+                                  ".M.S.",
+                                  "..A.A",
+                                  ".M.S.M"];
+
+            Assert.IsTrue(IsMasFromDirection(testBlock, Directions[Compass.NW], new Location { i = 1, j = 2 }));
+            Assert.IsTrue(IsMasFromDirection(testBlock, Directions[Compass.SW], new Location { i = 1, j = 2 }));
+            Assert.IsFalse(IsMasFromDirection(testBlock, Directions[Compass.SE], new Location { i = 1, j = 2 }));
+        }
+
+        [TestMethod()]
+        public void BlocksMatchTest()
+        {
+            string[] testBlock1 = [".M.S.",
+                                  "..A..",
+                                  ".M.S.",
+                                  "..A.A",
+                                  ".M.S.M"];
+
+            string[] testBlock2 = [".M.S.",
+                                  "..A..",
+                                  ".X.S.",
+                                  "..A.A",
+                                  ".M.S.M"];
+
+            //same as 1
+            string[] testBlock3 = [".M.S.",
+                                  "..A..",
+                                  ".M.S.",
+                                  "..A.A",
+                                  ".M.S.M"];
+
+            Assert.IsTrue(BlocksMatch(testBlock1, testBlock3));
+            Assert.IsFalse(BlocksMatch(testBlock1, testBlock2));
+        }
     }
 }

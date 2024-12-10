@@ -61,22 +61,47 @@
 
         public static int CountMasXes(string[] input)
         {
-            var IsMas = (string[] input, Direction aimDirection, Location startLocation) =>
-                CrawlDirection(input, aimDirection, startLocation, "MAS".Length) == "MAS";
+            List<Found> founds = [];
+            List<string[]> uniqueBlocks = [];
 
-            foreach(int i in Enumerable.Range(1, input.Length - 2))
+            foreach (int i in Enumerable.Range(1, input.Length - 2))
             {
                 foreach(int j in Enumerable.Range(1, input[i].Length - 2))
                 {
-                    foreach(Direction dir in Directions.Values)
+                    foreach(var dir in Directions.Where(d => d.Value.cardinality < 8))
                     {
-                        var isMatch = true; //TODO
+                        var location = () => new Location { i = i, j = j };
+                        if(IsMasFromDirection(input, dir.Value, location()))
+                        {
+                            if (IsMasFromDirection(input, PerpendicularDirections(dir.Value).perp1, location())
+                                //|| IsMasFromDirection(input, PerpendicularDirections(dir.Value).perp2, location())
+                                )
+                            {
+                                founds.Add(new Found { direction = dir.Value, location = location() });
+                                var subblock = GetSubBlock(input, location(), 3, 3);
+
+                                if (uniqueBlocks.Where(b => BlocksMatch(b, subblock)).Count() == 0)
+                                {
+                                    uniqueBlocks.Add(subblock);
+                                    Console.WriteLine($"({i}, {j}) - {dir.Key}");
+                                    subblock.ToList().ForEach(l => Console.WriteLine(l));
+                                    Console.WriteLine();
+                                }
+                            }
+                        }
                     }
                 }
             }
+            Console.WriteLine($"Unique blocks: {uniqueBlocks.Count}");
 
-            return 0; //TODO
+            return founds.Count;
         }
+
+        public static bool IsMas(string[] input, Direction aimDirection, Location startLocation) =>
+                CrawlDirection(input, aimDirection, startLocation, "MAS".Length) == "MAS";
+
+        public static bool IsMasFromDirection(string[] input, Direction fromDirection, Location startLocation) =>
+                        IsMas(input, OpposingDirection(fromDirection), MoveLocation(startLocation, fromDirection, 1));
 
         public static int CountFoundStrings(string[] input, string findString)
         {
@@ -170,6 +195,18 @@
             } 
 
             return returnBlock;
+        }
+        
+        public static bool BlocksMatch(string[] block1, string[] block2)
+        {
+            if (block1.Length != block2.Length) return false;
+
+            foreach (int i in Enumerable.Range(0, block1.Length))
+            {
+                if (block1[i] != block2[i]) return false;
+            }
+
+            return true;
         }
     }
 }
