@@ -132,7 +132,15 @@
                 throw new ArgumentException("Subblock dimensions too large for initial block");
             }
 
-            return null;
+            string[] returnBlock = new string[iHeight];
+
+            foreach (var row in Enumerable.Range(0, iHeight))
+            {
+                returnBlock[row] = block[centerLocation.i - ((iHeight - 1) / 2) + row]
+                                    .Substring(centerLocation.j - ((jWidth - 1) / 2), jWidth);
+            } 
+
+            return returnBlock;
         }
     }
 }

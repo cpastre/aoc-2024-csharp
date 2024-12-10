@@ -74,6 +74,24 @@ namespace Day04.Tests
             Assert.ThrowsException<ArgumentException>(() => GetSubBlock(testblock, new Location { i = 3, j = 3 }, 5, 6));
             Assert.ThrowsException<ArgumentException>(() => GetSubBlock(testblock, new Location { i = 4, j = 3 }, 3, 3));
             Assert.ThrowsException<ArgumentException>(() => GetSubBlock(testblock, new Location { i = 2, j = 3 }, 5, 5));
+
+            string[] testSubBlock1 = ["678", "BCD", "GHI"];
+            foreach (int row in Enumerable.Range(0, 3))
+                Assert.AreEqual(testSubBlock1[row], GetSubBlock(testblock, new Location { i = 2, j = 2 }, 3, 3)[row]);
+
+            string[] testSubBlock2 = ["01234", "56789", "ABCDE", "FGHIJ", "KLMNO"];
+            foreach (int row in Enumerable.Range(0, 5))
+                Assert.AreEqual(testSubBlock2[row], GetSubBlock(testblock, new Location { i = 2, j = 2 }, 5, 5)[row]);
+
+            string[] testSubBlock3 = ["CDE", "HIJ", "MNO"];
+            foreach (int row in Enumerable.Range(0, 3))
+                Assert.AreEqual(testSubBlock3[row], GetSubBlock(testblock, new Location { i = 3, j = 3 }, 3, 3)[row]);
+
+            string[] testSubBlock4 = ["1"];
+            foreach (int row in Enumerable.Range(0, 1))
+                Assert.AreEqual(testSubBlock4[row], GetSubBlock(testblock, new Location { i = 0, j = 1 }, 1, 1)[row]);
+
+            Assert.AreNotEqual("9", GetSubBlock(testblock, new Location { i = 0, j = 1 }, 1, 1)[0]);
         }
     }
 }
