@@ -44,15 +44,38 @@
             var liveInput = File.ReadAllLines(@"input.txt");
             var testInput = File.ReadAllLines(@"input - sample.txt");
 
-            var countXmases = (string[] input) => CountFoundStrings(input, "XMAS");
+            var CountXmases = (string[] input) => CountFoundStrings(input, "XMAS");
 
             Console.WriteLine("--- PART ONE ---\n");
-            Console.WriteLine($"The number of found XMASes is: {countXmases(liveInput)}.");
+            Console.WriteLine($"The number of found XMASes is: {CountXmases(liveInput)}.");
             Console.WriteLine();
-            Console.WriteLine($"Test reports: {countXmases(testInput)}.");
+            Console.WriteLine($"Test reports: {CountXmases(testInput)}.");
 
             //Part 2
+            Console.WriteLine();
+            Console.WriteLine("--- PART TWP ---\n");
+            Console.WriteLine($"The number of found XMASes is: {CountMasXes(liveInput)}.");
+            Console.WriteLine();
+            Console.WriteLine($"Test reports: {CountMasXes(testInput)}.");
+        }
 
+        public static int CountMasXes(string[] input)
+        {
+            var IsMas = (string[] input, Direction aimDirection, Location startLocation) =>
+                CrawlDirection(input, aimDirection, startLocation, "MAS".Length) == "MAS";
+
+            foreach(int i in Enumerable.Range(1, input.Length - 2))
+            {
+                foreach(int j in Enumerable.Range(1, input[i].Length - 2))
+                {
+                    foreach(Direction dir in Directions.Values)
+                    {
+                        var isMatch = true;
+                    }
+                }
+            }
+
+            return 0; //TODO
         }
 
         public static int CountFoundStrings(string[] input, string findString)
@@ -67,7 +90,7 @@
                     //each direction
                     foreach (var direction in Directions)
                     {
-                        string found = crawlDirection(input, direction.Value, new Location { i = i, j = j }, findString.Length);
+                        string found = CrawlDirection(input, direction.Value, new Location { i = i, j = j }, findString.Length);
 
                         if (found == findString)
                         {
@@ -79,7 +102,7 @@
             return founds.Count;
         }
 
-        private static string crawlDirection(string[] input, Direction aimDirection, Location startLocation, int length)
+        private static string CrawlDirection(string[] input, Direction aimDirection, Location startLocation, int length)
         {
             string crawlDirectionIter(Location iterLocation, int iterLength)
             {
@@ -106,7 +129,6 @@
 
         public static (Direction perp1, Direction perp2) PerpendicularDirections(Direction direction)
         {
-            var NormalizeCardinality = (int cardinality) => cardinality % Directions.Count;
             return (Directions.Where(d => d.Value.cardinality == NormalizeCardinality(direction.cardinality + Directions.Count/4*1)).First().Value,
                 Directions.Where(d => d.Value.cardinality == NormalizeCardinality(direction.cardinality + Directions.Count/4*3)).First().Value);
         }
@@ -114,6 +136,13 @@
         public static bool ArePerpendicular(Direction direction1, Direction direction2) =>
             direction2 == PerpendicularDirections(direction1).perp1 ||
             direction2 == PerpendicularDirections(direction1).perp2;
+
+        public static Direction OpposingDirection(Direction direction)
+        {
+            return Directions.Where(d => d.Value.cardinality == NormalizeCardinality(direction.cardinality + Directions.Count / 4 * 2)).First().Value;
+        }
+
+        private static int NormalizeCardinality(int cardinality) => cardinality % Directions.Count;
 
         public static string[] GetSubBlock(string[] block, Location centerLocation, int iHeight, int jWidth)
         {

@@ -93,5 +93,13 @@ namespace Day04.Tests
 
             Assert.AreNotEqual("9", GetSubBlock(testblock, new Location { i = 0, j = 1 }, 1, 1)[0]);
         }
+
+        [TestMethod()]
+        public void OpposingDirectionTest()
+        {
+            Assert.AreEqual(Directions[Compass.E], OpposingDirection(Directions[Compass.W]));
+            Assert.AreEqual(Directions[Compass.SE], OpposingDirection(Directions[Compass.NW]));
+            Assert.AreEqual(Directions[Compass.S], OpposingDirection(Directions[Compass.N]));
+        }
     }
 }
