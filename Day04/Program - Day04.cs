@@ -73,20 +73,18 @@
                         var location = () => new Location { i = i, j = j };
                         if(IsMasFromDirection(input, dir.Value, location()))
                         {
-                            if (IsMasFromDirection(input, PerpendicularDirections(dir.Value).perp1, location())
-                                //|| IsMasFromDirection(input, PerpendicularDirections(dir.Value).perp2, location())
-                                )
+                            if (IsMasFromDirection(input, PerpendicularDirections(dir.Value).perp1, location()))
                             {
                                 founds.Add(new Found { direction = dir.Value, location = location() });
-                                var subblock = GetSubBlock(input, location(), 3, 3);
+                                //var subblock = GetSubBlock(input, location(), 3, 3);
 
-                                if (uniqueBlocks.Where(b => BlocksMatch(b, subblock)).Count() == 0)
-                                {
-                                    uniqueBlocks.Add(subblock);
-                                    Console.WriteLine($"({i}, {j}) - {dir.Key}");
-                                    subblock.ToList().ForEach(l => Console.WriteLine(l));
-                                    Console.WriteLine();
-                                }
+                                //if (uniqueBlocks.Where(b => BlocksMatch(b, subblock)).Count() == 0)
+                                //{
+                                //    uniqueBlocks.Add(subblock);
+                                //    Console.WriteLine($"({i}, {j}) - {dir.Key}");
+                                //    subblock.ToList().ForEach(l => Console.WriteLine(l));
+                                //    Console.WriteLine();
+                                //}
                             }
                         }
                     }
