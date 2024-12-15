@@ -1,6 +1,4 @@
-﻿
-
-using static Day05.Program;
+﻿using static Day05.Program;
 
 namespace Day05
 {
@@ -86,12 +84,6 @@ namespace Day05
             }
             var ReorderPages = (int[] pageSet) => ReorderPagesIter(pageSet, []);
             
-            int[] result = [];
-            foreach(var page in outOfOrderPageSets[2])
-            {
-                result = PatchPageIn(page, result);
-            }
-
             var MiddlePageNumber = (int[] pages) => pages[(pages.Length - 1) / 2];
             var MiddlePageTotal = (int[][] pageSets) => pageSets.Sum(s => MiddlePageNumber(s));
             Console.WriteLine($"Total middle pages: " +
