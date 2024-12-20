@@ -1,5 +1,6 @@
 ﻿
 
+using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
 
 namespace Day06
@@ -75,25 +76,50 @@ namespace Day06
             string[] liveInput = File.ReadAllLines("input.txt");
             string[] testInput = File.ReadAllLines("input - Sample.txt");
 
+            Console.WriteLine("--- PART ONE ---\n");
+            Console.WriteLine("Test Values");
             ProcessPart1(testInput);
-
+            Console.WriteLine("Live Values");
+            ProcessPart1(liveInput);
         }
 
         private static void ProcessPart1(string[] input)
         {
-            var grid = BuildGrid(input);
-            Location initialLocation = FindInitialLocation(grid);
-            Direction initialDirection = Directions[Compass.N];
-            var nextBlock = NextBlock(grid, initialLocation, initialDirection);
-            var nextStartPoint = MoveLocation(nextBlock.blockLocation, OpposingDirection(initialDirection), 1);
-            var nextDirection = TurnDirection(initialDirection, -90);
-            var distance = Distance(initialLocation, nextStartPoint);
+            var totalDistance = 1 + PatrolDistance(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N]);   //1 for initial position
+            var spacesCovered = PatrolLocationsCovered(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N]);
 
-            var totalDistance = 1 + DoPatrol(BuildGrid(input), FindInitialLocation(grid), Directions[Compass.N]);   //1 for initial position
-
+            Console.WriteLine($"Total Positions visited: {
+                PatrolLocationsCovered(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N])
+                .Count()}");
+            Console.WriteLine($"Unique Positions visited: {
+                PatrolLocationsCovered(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N])
+                .Distinct().Count()}");
         }
 
-        private static double DoPatrol(char[][] grid, Location startLocation, Direction startDirection)
+        private static IEnumerable<Location> PatrolLocationsCovered(char[][] grid, Location startLocation, 
+            Direction startDirection)
+        {
+            IEnumerable<Location> DoPatrolIter(IEnumerable<Location> pathSoFar, Direction direction)                
+            {
+                var nextBlockPath = () => NextBlockPath(grid, pathSoFar.Last(), direction);
+                var nextBlock = () => nextBlockPath().path.Last();
+                if (!nextBlockPath().isBlock)
+                {
+                    //leaves boundary, wrap it up (including the final block, which isn't actually a block, just last before boundary)
+                    return [.. pathSoFar, .. nextBlockPath().path];
+                }
+                else
+                {
+                    var nextBlockPathExStart = () => nextBlockPath().path.Skip(1);
+                    IEnumerable<Location> newPath () => [..pathSoFar, ..nextBlockPathExStart().Take(nextBlockPathExStart().Count() - 1)];
+                    var newPathStartLocation = () => newPath().Last();
+                    return DoPatrolIter(newPath(), TurnDirection(direction, -90));
+                }
+            }
+            return DoPatrolIter(new List<Location>() { startLocation }, startDirection);
+        }
+
+        private static double PatrolDistance(char[][] grid, Location startLocation, Direction startDirection)
         {
             double DoPatrolIter(Location location, Direction direction)
             {
@@ -113,25 +139,34 @@ namespace Day06
             return DoPatrolIter(startLocation, startDirection);
         }
 
-        private static (bool isBlock, Location blockLocation) NextBlock(char[][] grid, Location fromLocation, Direction fromDirection)
+        private static (bool isBlock, Location blockLocation) 
+            NextBlock(char[][] grid, Location fromLocation, Direction fromDirection)
         {
-            Location DoStepIter(Location location)
+            return (NextBlockPath(grid, fromLocation, fromDirection).isBlock,
+                    NextBlockPath(grid, fromLocation, fromDirection).blockLocation);
+        }
+
+        private static (bool isBlock, Location blockLocation, IEnumerable<Location> path) 
+            NextBlockPath(char[][] grid, Location fromLocation, Direction fromDirection)
+        {
+            IEnumerable<Location> DoStepIter(IEnumerable<Location> pathSoFar)
             {
-                if (grid[location.i][location.j] == '#' || IsBoundaryInDirection(grid, location, fromDirection))
+                if (grid[pathSoFar.Last().i][pathSoFar.Last().j] == '#' || IsBoundaryInDirection(grid, pathSoFar.Last(), fromDirection))
                 {
-                    return location;
+                    return pathSoFar;
                 }
                 else
                 {
-                    return DoStepIter(MoveLocation(location, fromDirection, 1));
+                    return DoStepIter([.. pathSoFar, MoveLocation(pathSoFar.Last(), fromDirection, 1)]);
                 }
             }
-            Location terminus() => DoStepIter(fromLocation);
+            IEnumerable<Location> returnPath = DoStepIter([fromLocation]);
+            Location terminus() => returnPath.Last();
 
             return GetValueAt(grid, terminus()) switch
             {
-                '#' => (true, terminus()),
-                _ => (false, terminus())
+                '#' => (true, terminus(), returnPath),
+                _ => (false, terminus(), returnPath)
             };
         }
 
