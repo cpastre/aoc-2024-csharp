@@ -85,9 +85,6 @@ namespace Day06
 
         private static void ProcessPart1(string[] input)
         {
-            var totalDistance = 1 + PatrolDistance(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N]);   //1 for initial position
-            var spacesCovered = PatrolLocationsCovered(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N]);
-
             Console.WriteLine($"Total Positions visited: {
                 PatrolLocationsCovered(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N])
                 .Count()}");
