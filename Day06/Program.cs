@@ -21,12 +21,6 @@ namespace Day06
             public required int j;
         }
 
-        public record Found
-        {
-            public required Location location;
-            public required Direction direction;
-        }
-
         public enum Compass { E, NE, N, NW, W, SW, S, SE };
 
         public static readonly Func<int, int, int> plusOp = (int i1, int i2) => i1 + i2;
