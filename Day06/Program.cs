@@ -1,11 +1,8 @@
-﻿
-
-using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
+﻿using System.Runtime.CompilerServices;
 
 namespace Day06
 {
-    internal class Program
+    public class Program
     {
         public record Direction
         {
@@ -19,6 +16,12 @@ namespace Day06
         {
             public required int i;
             public required int j;
+        }
+
+        public record Step
+        {
+            public required Location l1;
+            public required Location l2;
         }
 
         public enum Compass { E, NE, N, NW, W, SW, S, SE };
@@ -65,7 +68,7 @@ namespace Day06
             return Math.Sqrt(Math.Pow(location2.i - location1.i, 2) + Math.Pow(location2.j - location1.j, 2));
         }
 
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             string[] liveInput = File.ReadAllLines("input.txt");
             string[] testInput = File.ReadAllLines("input - Sample.txt");
@@ -75,36 +78,86 @@ namespace Day06
             ProcessPart1(testInput);
             Console.WriteLine("Live Values");
             ProcessPart1(liveInput);
+
+            Console.WriteLine("--- PART TWO ---\n");
+            Console.WriteLine("Test Values");
+            await ProcessPart2(testInput);
+            Console.WriteLine("Live Values");
+            await ProcessPart2(liveInput);
         }
 
-        private static void ProcessPart1(string[] input)
+        private static async void ProcessPart1(string[] input)
         {
-            Console.WriteLine($"Total Positions visited: {
-                PatrolLocationsCovered(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N])
-                .Count()}");
-            Console.WriteLine($"Unique Positions visited: {
-                PatrolLocationsCovered(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N])
-                .Distinct().Count()}");
+            Console.WriteLine($"Total Positions visited: {(await PatrolLocationsCovered(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N]))
+                .locations.Count()}");
+            Console.WriteLine($"Unique Positions visited: {(await PatrolLocationsCovered(BuildGrid(input), FindInitialLocation(BuildGrid(input)), Directions[Compass.N]))
+                .locations.Distinct().Count()}");
         }
 
-        private static IEnumerable<Location> PatrolLocationsCovered(char[][] grid, Location startLocation, 
+        private static async Task ProcessPart2(string[] input)
+        {
+            var inputWithNewBlock = BuildGrid(input);
+            List<Location> locs = [];
+            for (int i = 0; i < inputWithNewBlock.Length; i++)
+            {
+                for (int j = 0; j < inputWithNewBlock[i].Length; j++)
+                {
+                    char initialValue = inputWithNewBlock[i][j];
+                    if (initialValue != '^' && initialValue != '#')
+                    {
+                        inputWithNewBlock[i][j] = '#';
+                        //Console.WriteLine($"Replacing: ({ i}, { j})");
+                        foreach (char[] s in inputWithNewBlock)
+                        {
+                            //Console.WriteLine(s);
+                        }
+                        var plc = () => PatrolLocationsCovered(inputWithNewBlock, FindInitialLocation(BuildGrid(input)), Directions[Compass.N]);
+                        if ((await plc()).isLoop)
+                        {
+                            locs.Add(new Location { i = i, j = j });
+                            Console.WriteLine($"({i}, {j})");
+                        }
+                        inputWithNewBlock[i][j] = initialValue;
+                    }
+                }
+            }
+            //foreach (var l in locs)
+            //    Console.WriteLine($"({l.i}, {l.j})");
+            Console.WriteLine($"Count: {locs.Count()}");
+        }
+
+        public static async Task<(IEnumerable<Location> locations, bool isLoop)> PatrolLocationsCovered(char[][] grid, Location startLocation,
             Direction startDirection)
         {
-            IEnumerable<Location> DoPatrolIter(IEnumerable<Location> pathSoFar, Direction direction)                
+            (IEnumerable<Location>, bool isLoop) DoPatrolIter(IEnumerable<Location> pathSoFar, Direction direction)
             {
                 var nextBlockPath = () => NextBlockPath(grid, pathSoFar.Last(), direction);
                 var nextBlock = () => nextBlockPath().path.Last();
+
                 if (!nextBlockPath().isBlock)
                 {
                     //leaves boundary, wrap it up (including the final block, which isn't actually a block, just last before boundary)
-                    return [.. pathSoFar, .. nextBlockPath().path];
+                    return ([.. pathSoFar, .. nextBlockPath().path], false);
                 }
                 else
                 {
                     var nextBlockPathExStart = () => nextBlockPath().path.Skip(1);
-                    IEnumerable<Location> newPath () => [..pathSoFar, ..nextBlockPathExStart().Take(nextBlockPathExStart().Count() - 1)];
-                    var newPathStartLocation = () => newPath().Last();
-                    return DoPatrolIter(newPath(), TurnDirection(direction, -90));
+                    var nextBlockPathExStartExBlock = () => nextBlockPathExStart().Take(nextBlockPathExStart().Count() - 1);
+
+                    //check to see if this new path end is already on the existing path and if we were going in the same direction when we started out - maybe we're in a loop
+                    if (IsLoop([..pathSoFar, ..nextBlockPathExStartExBlock()]))
+                    {
+                        //yes, we've been here before - let's return the complete loop with the end position == start position
+                        return ([.. pathSoFar,
+                                .. nextBlockPath().path.TakeWhile(l => l != startLocation),
+                                startLocation], true);
+                    }
+                    else
+                    {
+                        IEnumerable<Location> newPath() => [.. pathSoFar, .. nextBlockPathExStart().Take(nextBlockPathExStart().Count() - 1)];
+                        var newPathStartLocation = () => newPath().Last();
+                        return DoPatrolIter(newPath(), TurnDirection(direction, -90));
+                    }
                 }
             }
             return DoPatrolIter(new List<Location>() { startLocation }, startDirection);
@@ -130,14 +183,14 @@ namespace Day06
             return DoPatrolIter(startLocation, startDirection);
         }
 
-        private static (bool isBlock, Location blockLocation) 
+        private static (bool isBlock, Location blockLocation)
             NextBlock(char[][] grid, Location fromLocation, Direction fromDirection)
         {
             return (NextBlockPath(grid, fromLocation, fromDirection).isBlock,
                     NextBlockPath(grid, fromLocation, fromDirection).blockLocation);
         }
 
-        private static (bool isBlock, Location blockLocation, IEnumerable<Location> path) 
+        private static (bool isBlock, Location blockLocation, IEnumerable<Location> path)
             NextBlockPath(char[][] grid, Location fromLocation, Direction fromDirection)
         {
             IEnumerable<Location> DoStepIter(IEnumerable<Location> pathSoFar)
@@ -169,7 +222,7 @@ namespace Day06
                 (fromDirection.compass == Compass.S && location.i == grid.Length - 1);
         }
 
-        private static Location FindInitialLocation(char[][] grid)
+        public static Location FindInitialLocation(char[][] grid)
         {
             for (int i = 0; i < grid.Length; i++)
             {
@@ -184,7 +237,7 @@ namespace Day06
             throw new Exception("Initial ^ location not found.");
         }
 
-        private static char[][] BuildGrid(string[] liveInput)
+        public static char[][] BuildGrid(string[] liveInput)
         {
             char[][] grid = new char[liveInput.Length][];
             for (int i = 0; i < liveInput.Length; i++)
@@ -197,6 +250,49 @@ namespace Day06
         private static char GetValueAt(char[][] grid, Location location)
         {
             return grid[location.i][location.j];
+        }
+
+        public static IEnumerable<Step> ZipSteps(IEnumerable<Location> locations)
+        {
+            if (locations.Count() <= 1)
+            {
+                throw new ArgumentException("Can't zip a list of locations fewer than 2.");
+            }
+            return [//new Step { l1 = null, l2 = locations.First()},
+                    ..locations.Take(locations.Count()-1).Zip(locations.Skip(1)).Select(i => new Step { l1 = i.First, l2 = i.Second} ),
+                    //new Step { l1 = locations.Last(), l2 = null }
+                    ];
+        }
+
+        public static IEnumerable<Step> TrimDuplicateSteps(IEnumerable<Step> steps)
+        {
+            if (steps.Count() == 0 
+                || !steps.Take(steps.Count() - 1).Contains(steps.Last()))
+            {
+                return steps;
+            }
+            else
+            {
+                return TrimDuplicateSteps(steps.Take(steps.Count() - 1));
+            }
+        }
+
+        public static IEnumerable<Location> UnzipSteps(IEnumerable<Step> steps)
+        {
+            if (steps.Count() == 0)
+            {
+                return [];
+            }
+            else
+            {
+                return [.. steps.Select(s => s.l1), steps.Last().l2];
+            }
+        }
+
+        public static bool IsLoop(IEnumerable<Location> path)
+        {
+            var trimmed = () => UnzipSteps(TrimDuplicateSteps(ZipSteps(path)));
+            return path.Count() > 1 && path.Count() != trimmed().Count();   //can't be a loop if it's less than 2 locations
         }
     }
 }
