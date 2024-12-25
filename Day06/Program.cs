@@ -72,18 +72,22 @@ namespace Day06
         {
             string[] liveInput = File.ReadAllLines("input.txt");
             string[] testInput = File.ReadAllLines("input - Sample.txt");
+            DateTime startTime;
 
+            startTime = DateTime.Now;
             Console.WriteLine("--- PART ONE ---\n");
             Console.WriteLine("Test Values");
             ProcessPart1(testInput);
             Console.WriteLine("Live Values");
             ProcessPart1(liveInput);
+            Console.WriteLine($"Process Time: {(DateTime.Now - startTime).TotalMilliseconds}");
 
             Console.WriteLine("--- PART TWO ---\n");
             Console.WriteLine("Test Values");
             await ProcessPart2(testInput);
             Console.WriteLine("Live Values");
             await ProcessPart2(liveInput);
+            Console.WriteLine($"Process Time: {(DateTime.Now - startTime).TotalMilliseconds}");
         }
 
         private static async void ProcessPart1(string[] input)
