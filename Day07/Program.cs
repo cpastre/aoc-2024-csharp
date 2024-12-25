@@ -22,24 +22,39 @@ namespace Day07
 
         public static Operation plusOp = new() { Name = "+", Op = static (long in1, long in2) => in1 += in2, Identity = 0 };
         public static Operation multOp = new() { Name = "*", Op = static (long in1, long in2) => in1 *= in2, Identity = 1 };
+        public static Operation squishOp = new() { Name = "||", Op = static (long in1, long in2) => long.Parse(in1.ToString() + in2.ToString()), Identity = 0 };
 
-        static void Main()
+
+        public static async Task Main()
         {
             var loadInputFile = (string filename) => new ReadOnlyCollection<string>(File.ReadAllLines(filename));
             var testInput = loadInputFile("input - Sample.txt");
             var liveInput = loadInputFile("input.txt");
+            DateTime startTime;
 
+            startTime = DateTime.Now;
             Console.WriteLine("--- PART ONE ---\n");
             Console.WriteLine("Test Values");
             ProcessPart1(testInput);
             Console.WriteLine("Live Values");
             ProcessPart1(liveInput);
+            Console.WriteLine($"Process Time: {(DateTime.Now - startTime).TotalMilliseconds}");
 
-            Console.WriteLine("--- PART ONE ---\n");
+            startTime = DateTime.Now;
+            Console.WriteLine("--- PART TWO ---\n");
             Console.WriteLine("Test Values");
-            ProcessPart2(testInput);
-            //Console.WriteLine("Live Values");
-            //ProcessPart2(liveInput);
+            await ProcessPart2(testInput);
+            Console.WriteLine("Live Values");
+            await ProcessPart2(liveInput);
+            Console.WriteLine($"Process Time: {(DateTime.Now - startTime).TotalMilliseconds}");
+
+            startTime = DateTime.Now;
+            Console.WriteLine(@"--- PART ""THREE"" ---\n");
+            Console.WriteLine("Test Values");
+            ProcessPart3(testInput);
+            Console.WriteLine("Live Values");
+            ProcessPart3(liveInput);
+            Console.WriteLine($"Process Time: {(DateTime.Now - startTime).TotalMilliseconds}");
         }
 
         private static void ProcessPart1(ReadOnlyCollection<string> input)
@@ -51,12 +66,32 @@ namespace Day07
                     Numbers = Regex.Matches(e.Substring(e.IndexOf(':') + 1), @"\b(\w+)")
                                 .Select(n => long.Parse(n.Value)).ToArray()
                 });
-            var t1 = loadEquationSource();
-            var t2 = GeneratePermutations([plusOp, multOp], t1.First().Numbers.Count() - 1);
-            var t3 = PerformOperationPermutations(t2, t1.First().Numbers);
+            //var t1 = loadEquationSource();
+            //var t2 = GeneratePermutations([plusOp, multOp], t1.First().Numbers.Count() - 1);
+            //var t3 = PerformOperationPermutations(t2, t1.First().Numbers);
             var identifyMatching = () => loadEquationSource()
-                .SelectMany(es => PerformOperationPermutations(GeneratePermutations([plusOp, multOp], es.Numbers.Length - 1), es.Numbers).Distinct().Where(r => r == es.Sum));
+                .SelectMany(es => PerformOperationPermutations(GeneratePermutations([plusOp, multOp], es.Numbers.Length - 1), es.Numbers)
+                                  .Distinct().Where(r => r == es.Sum));
             Console.WriteLine($"Matching total: {identifyMatching().Sum()}");
+
+        }
+
+        private static async Task ProcessPart2(ReadOnlyCollection<string> input)
+        {
+            var loadEquationSource = async () => input.Select(e =>
+                new EquationSource
+                {
+                    Sum = long.Parse(e.Substring(0, e.IndexOf(':'))),
+                    Numbers = Regex.Matches(e.Substring(e.IndexOf(':') + 1), @"\b(\w+)")
+                                .Select(n => long.Parse(n.Value)).ToArray()
+                });
+            //var t1 = loadEquationSource();
+            //var t2 = GeneratePermutations([plusOp, multOp], t1.First().Numbers.Count() - 1);
+            //var t3 = PerformOperationPermutations(t2, t1.First().Numbers);
+            var identifyMatching = async () => (await loadEquationSource())
+                .SelectMany(es => PerformOperationPermutations(GeneratePermutations([plusOp, multOp, squishOp], es.Numbers.Length - 1), es.Numbers)
+                                  .Distinct().Where(r => r == es.Sum));
+            Console.WriteLine($"Matching total: {(await identifyMatching()).Sum()}");
 
         }
 
@@ -80,7 +115,7 @@ namespace Day07
                     .Replace("@",@"").Replace('#',' ') + numStrings().Last());
             }).SelectMany(s => s).ToArray();
 
-            var t = preprocessEqSource();
+            //var t = preprocessEqSource();
             var loadEquationSource = (string[] input) => input.Select(e =>
                new EquationSource
                {
@@ -88,19 +123,20 @@ namespace Day07
                    Numbers = Regex.Matches(e.Substring(e.IndexOf(':') + 1), @"\b(\w+)")
                                .Select(n => long.Parse(n.Value)).ToArray()
                });
-            var t1 = loadEquationSource(preprocessEqSource());
+            //var t1 = loadEquationSource(preprocessEqSource());
 
             var identifyMatching = () => loadEquationSource(preprocessEqSource())
                     .SelectMany(es => PerformOperationPermutations(GeneratePermutations([plusOp, multOp], es.Numbers.Length - 1), es.Numbers)
                     .Distinct().Where(r => r == es.Sum));
-            var t2 = loadEquationSource(preprocessEqSource())
-                    .SelectMany(es => PerformOperationPermutations(GeneratePermutations([plusOp, multOp], es.Numbers.Length - 1), es.Numbers)
-                        .Select(s => (es.Sum, es.Numbers, s)));
+            //var t2 = loadEquationSource(preprocessEqSource())
+            //        .SelectMany(es => PerformOperationPermutations(GeneratePermutations([plusOp, multOp], es.Numbers.Length - 1), es.Numbers)
+            //            .Select(s => (es.Sum, es.Numbers, s)));
 
-            foreach (var _t in t2)
-            {
-                Console.WriteLine($"{_t.Sum}: {String.Join(' ', _t.Numbers)} = {_t.s}\t\t{_t.Sum == _t.s}");
-            }
+            //foreach (var _t in t2)
+            //{
+            //    Console.WriteLine($"{_t.Sum}: {String.Join(' ', _t.Numbers)} = {_t.s}\t\t{_t.Sum == _t.s}");
+            //}
+
             Console.WriteLine($"Matching total: {identifyMatching().Sum()}");
 
         }
