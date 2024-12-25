@@ -78,7 +78,7 @@ namespace Day07
 
         private static async Task ProcessPart2(ReadOnlyCollection<string> input)
         {
-            var loadEquationSource = async () => input.Select(e =>
+            var loadEquationSource = async () => input.AsParallel().Select(e =>
                 new EquationSource
                 {
                     Sum = long.Parse(e.Substring(0, e.IndexOf(':'))),
@@ -88,7 +88,7 @@ namespace Day07
             //var t1 = loadEquationSource();
             //var t2 = GeneratePermutations([plusOp, multOp], t1.First().Numbers.Count() - 1);
             //var t3 = PerformOperationPermutations(t2, t1.First().Numbers);
-            var identifyMatching = async () => (await loadEquationSource())
+            var identifyMatching = async () => (await loadEquationSource()).AsParallel()
                 .SelectMany(es => PerformOperationPermutations(GeneratePermutations([plusOp, multOp, squishOp], es.Numbers.Length - 1), es.Numbers)
                                   .Distinct().Where(r => r == es.Sum));
             Console.WriteLine($"Matching total: {(await identifyMatching()).Sum()}");
@@ -101,7 +101,7 @@ namespace Day07
             var intToMask = (int i) => Convert.ToString(i, 2);
             var permMasks = (int spaceCount) => Enumerable.Range(0, (int)Math.Pow(2, spaceCount))
                                                           .Select(i => intToMask(i).PadLeft(spaceCount, '0').Replace('0','@').Replace('1','#'));
-            var preprocessEqSource = () => input.Select(e =>
+            var preprocessEqSource = () => input.AsParallel().Select(e =>
             {
                 string sumChunk() => e.Substring(0, e.IndexOf(':') + 2);
                 string numsChunk() => e.Substring(e.IndexOf(':') + 2);
@@ -125,7 +125,7 @@ namespace Day07
                });
             //var t1 = loadEquationSource(preprocessEqSource());
 
-            var identifyMatching = () => loadEquationSource(preprocessEqSource())
+            var identifyMatching = () => loadEquationSource(preprocessEqSource()).AsParallel()
                     .SelectMany(es => PerformOperationPermutations(GeneratePermutations([plusOp, multOp], es.Numbers.Length - 1), es.Numbers)
                     .Distinct().Where(r => r == es.Sum));
             //var t2 = loadEquationSource(preprocessEqSource())
