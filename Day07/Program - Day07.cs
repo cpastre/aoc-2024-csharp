@@ -25,7 +25,7 @@ namespace Day07
         public static Operation squishOp = new() { Name = "||", Op = static (long in1, long in2) => long.Parse(in1.ToString() + in2.ToString()), Identity = 0 };
 
 
-        public static async Task Main()
+        public static void Main()
         {
             var loadInputFile = (string filename) => new ReadOnlyCollection<string>(File.ReadAllLines(filename));
             var testInput = loadInputFile("input - Sample.txt");
@@ -43,9 +43,9 @@ namespace Day07
             startTime = DateTime.Now;
             Console.WriteLine("--- PART TWO ---\n");
             Console.WriteLine("Test Values");
-            await ProcessPart2(testInput);
+            ProcessPart2(testInput);
             Console.WriteLine("Live Values");
-            await ProcessPart2(liveInput);
+            ProcessPart2(liveInput);
             Console.WriteLine($"Process Time: {(DateTime.Now - startTime).TotalMilliseconds}");
 
             startTime = DateTime.Now;
@@ -76,9 +76,9 @@ namespace Day07
 
         }
 
-        private static async Task ProcessPart2(ReadOnlyCollection<string> input)
+        private static void ProcessPart2(ReadOnlyCollection<string> input)
         {
-            var loadEquationSource = async () => input.AsParallel().Select(e =>
+            var loadEquationSource = () => input.AsParallel().Select(e =>
                 new EquationSource
                 {
                     Sum = long.Parse(e.Substring(0, e.IndexOf(':'))),
@@ -88,10 +88,10 @@ namespace Day07
             //var t1 = loadEquationSource();
             //var t2 = GeneratePermutations([plusOp, multOp], t1.First().Numbers.Count() - 1);
             //var t3 = PerformOperationPermutations(t2, t1.First().Numbers);
-            var identifyMatching = async () => (await loadEquationSource()).AsParallel()
+            var identifyMatching = () => loadEquationSource().AsParallel()
                 .SelectMany(es => PerformOperationPermutations(GeneratePermutations([plusOp, multOp, squishOp], es.Numbers.Length - 1), es.Numbers)
                                   .Distinct().Where(r => r == es.Sum));
-            Console.WriteLine($"Matching total: {(await identifyMatching()).Sum()}");
+            Console.WriteLine($"Matching total: {identifyMatching().Sum()}");
 
         }
 
